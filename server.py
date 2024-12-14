@@ -16,7 +16,8 @@ import os
 app = Flask(__name__)
 
 # Rate Limiting
-limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
+limiter = Limiter(get_remote_address, default_limits=["200 per day", "50 per hour"])
+limiter.init_app(app)
 
 # SQLite database setup
 conn = sqlite3.connect('keys.db', check_same_thread=False)
