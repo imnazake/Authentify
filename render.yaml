@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: auth-server
+    env: python
+    region: frankfurt
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python server.py"  # Assuming your main Flask file is app.py
+    envVars:
+      - key: DISCORD_TOKEN
+        value: "your-discord-bot-token"  # Ensure this is securely set, not hard-coded.
+      - key: FLASK_APP
+        value: "server.py"  # Assuming your Flask app is named app.py.
+      - key: FLASK_ENV
+        value: "production"  # Use 'development' if you're in development.
+    plan: free
+    branches:
+      - main
+    ports:
+      - 8000
+    autoDeploy: true
