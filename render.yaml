@@ -7,7 +7,7 @@ services:
     startCommand: "python server.py"  # Assuming your main Flask file is app.py
     envVars:
       - key: DISCORD_TOKEN
-        value: "your-discord-bot-token"  # Ensure this is securely set, not hard-coded.
+        value: "MTMxNDUzNzE3ODY2Mjk2MTIwMg.GglFAW.eOXroSRImTovFFyfjXP_OoUwZs2oT4z0rbm9vE"  # Ensure this is securely set, not hard-coded.
       - key: FLASK_APP
         value: "server.py"  # Assuming your Flask app is named app.py.
       - key: FLASK_ENV
