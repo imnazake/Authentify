@@ -4,17 +4,20 @@ services:
     env: python
     region: frankfurt
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python server.py"  # Assuming your main Flask file is app.py
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT server:app"  # Start using gunicorn and bind to the dynamic port
     envVars:
-      - key: DISCORD_TOKEN
-        value: "MTMxNDUzNzE3ODY2Mjk2MTIwMg.GglFAW.eOXroSRImTovFFyfjXP_OoUwZs2oT4z0rbm9vE"  # Ensure this is securely set, not hard-coded.
       - key: FLASK_APP
-        value: "server.py"  # Assuming your Flask app is named app.py.
+        value: "server.py"  # Assuming your Flask app is named server.py.
       - key: FLASK_ENV
         value: "production"  # Use 'development' if you're in development.
+      # Use Render's secrets for secure environment variables
+      # Don't hardcode sensitive tokens here
+      # Use a `DISCORD_TOKEN` securely set in Render's environment variables
+      - key: DISCORD_TOKEN
+        value: MTMxNDUzNzE3ODY2Mjk2MTIwMg.GglFAW.eOXroSRImTovFFyfjXP_OoUwZs2oT4z0rbm9vE  # Reference the secret in Render's settings.
     plan: free
     branches:
       - main
     ports:
-      - 8000
+      - 8000  # Specify the port if necessary
     autoDeploy: true
