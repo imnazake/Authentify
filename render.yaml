@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: auth-server
+    name: authentify
     env: python
     region: frankfurt
     buildCommand: "pip install -r requirements.txt"
@@ -14,7 +14,7 @@ services:
       # Don't hardcode sensitive tokens here
       # Use a `DISCORD_TOKEN` securely set in Render's environment variables
       - key: DISCORD_TOKEN
-        value: MTMxNDUzNzE3ODY2Mjk2MTIwMg.GglFAW.eOXroSRImTovFFyfjXP_OoUwZs2oT4z0rbm9vE  # Reference the secret in Render's settings.
+        value: your_discord_bot_token  # Reference the secret in Render's settings.
     plan: free
     branches:
       - main
