@@ -16,7 +16,7 @@ import os
 app = Flask(__name__)
 
 # Rate Limiting
-limiter = Limiter(get_remote_address, default_limits=["200 per day", "50 per hour"])
+limiter = Limiter(get_remote_address, default_limits=["100 per day", "15 per hour"])
 limiter.init_app(app)
 
 # SQLite database setup
@@ -25,9 +25,10 @@ cursor = conn.cursor()
 
 # Create Keys table if it doesn't exist
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS keys (
+     CREATE TABLE IF NOT EXISTS keys (
         key TEXT PRIMARY KEY,
-        expiration_time TEXT
+        expiration_time TEXT,
+        hwid TEXT
     )
 ''')
 conn.commit()
@@ -38,8 +39,8 @@ API_KEY = "your-secure-api-key"
 # Discord bot setup
 DISCORD_TOKEN = "MTMxNDUzNzE3ODY2Mjk2MTIwMg.GglFAW.eOXroSRImTovFFyfjXP_OoUwZs2oT4z0rbm9vE"
 OWNER_ID = 654926717911302145  # Replace with your Discord user ID (integer)
-LOGS_CHANNEL_ID = 1110124527482064936  # Replace with actual channel ID
-CMD_CHANNEL_ID = 1120365486299951275  # Replace with actual channel ID
+LOGS_CHANNEL_ID = 1110124527482064936  # Replace with actual Discord channel ID
+CMD_CHANNEL_ID = 1120365486299951275  # Replace with actual Discord channel ID
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -61,24 +62,100 @@ def is_key_valid(key: str) -> bool:
             return True
     return False
 
+
+def authenticate_user(key: str, hwid: str) -> dict:
+    """Authenticate user by key and hwid."""
+    cursor.execute("SELECT expiration_time, hwid FROM keys WHERE key = ?", (key,))
+    result = cursor.fetchone()
+
+    if result:
+        expiration_time_str, stored_hwid = result
+        expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%d %H:%M:%S")
+
+        if expiration_time > datetime.now():
+            if stored_hwid is None:
+                # First use, HWID bind
+                cursor.execute("UPDATE keys SET hwid = ? WHERE key = ?", (hwid, key))
+                conn.commit()
+                return {"status": "allowed", "message": "HWID linked"}
+            elif stored_hwid == hwid:
+                # HWID matches
+                return {"status": "allowed", "message": "HWID verified"}
+            else:
+                # HWID mismatch
+                return {"status": "hwid mismatch"}
+        else:
+            # Key expired
+            return {"status": "expired"}
+    else:
+        # Key not found
+        return {"status": "invalid key"}
+
+
+@app.route('/auth', methods=['POST'])
+@limiter.limit("5 per minute")
+def auth():
+    """Authenticate the user by key and HWID."""
+    if not authenticate_request():
+        return jsonify({"status": "unauthorized"}), 401
+
+    # Get JSON data from the request
+    data = request.get_json()
+    key = data.get('key')
+    hwid = data.get('hwid')
+
+    # Validate the request
+    if not key or not isinstance(key, str) or not hwid or not isinstance(hwid, str):
+        return jsonify({"status": "invalid request"}), 400
+
+    # Call the authenticate function
+    result = authenticate_user(key, hwid)
+
+    # Return appropriate response based on the authentication result
+    if result["status"] == "allowed":
+        return jsonify(result), 200
+    elif result["status"] == "hwid mismatch":
+        return jsonify(result), 403
+    else:
+        return jsonify(result), 403
+
+
 # Flask Routes
 @app.route('/verify_key', methods=['POST'])
-@limiter.limit("10 per minute")  # Example rate limit for this endpoint
+@limiter.limit("5 per minute")
 def verify_key():
-    """Endpoint to verify if a key is valid."""
+    """Endpoint to verify if a key is valid and associated with the correct HWID."""
     if not authenticate_request():
         return jsonify({"status": "unauthorized"}), 401
 
     data = request.get_json()
     key = data.get('key')
+    hwid = data.get('hwid')
 
-    if not key or not isinstance(key, str):
+    if not key or not isinstance(key, str) or not hwid or not isinstance(hwid, str):
         return jsonify({"status": "invalid request"}), 400
 
-    if is_key_valid(key):
-        return jsonify({"status": "allowed"}), 200
-    else:
-        return jsonify({"status": "not allowed or expired"}), 403
+    cursor.execute("SELECT expiration_time, hwid FROM keys WHERE key = ?", (key,))
+    result = cursor.fetchone()
+
+    if result:
+        expiration_time_str, stored_hwid = result
+        expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%d %H:%M:%S")
+        
+        if expiration_time > datetime.now():
+            if stored_hwid is None:
+                # First time use: bind HWID
+                cursor.execute("UPDATE keys SET hwid = ? WHERE key = ?", (hwid, key))
+                conn.commit()
+                return jsonify({"status": "allowed", "message": "HWID linked"}), 200
+            elif stored_hwid == hwid:
+                # HWID matches
+                return jsonify({"status": "allowed", "message": "HWID verified"}), 200
+            else:
+                # HWID mismatch
+                return jsonify({"status": "hwid mismatch"}), 403
+
+    return jsonify({"status": "not allowed or expired"}), 403
 
 # Discord Bot Commands
 @bot.event
@@ -194,6 +271,23 @@ async def clear_chat(interaction: discord.Interaction, limit: int = 100):
 
     except Exception as e:
         await interaction.response.send_message(f"❌ An error occurred: {str(e)}", delete_after=5)
+
+
+@bot.tree.command(name="reset_hwid", description="Reset the HWID linked to a key.")
+@app_commands.checks.has_any_role('Administrator', 'Developer')
+async def reset_hwid(interaction: discord.Interaction, key: str):
+    """Command to reset the HWID linked to a key."""
+    try:
+        cursor.execute("SELECT key FROM keys WHERE key = ?", (key,))
+        if cursor.fetchone() is None:
+            await interaction.response.send_message(f"❌ Key `{key}` not found.")
+            return
+        
+        cursor.execute("UPDATE keys SET hwid = NULL WHERE key = ?", (key,))
+        conn.commit()
+        await interaction.response.send_message(f"✅ HWID for key `{key}` has been reset.")
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Error resetting HWID: {str(e)}")
 
 
 # Periodic Cleanup of Expired Keys
