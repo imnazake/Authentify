@@ -37,7 +37,7 @@ conn.commit()
 API_KEY = "your-secure-api-key"
 
 # Discord bot setup
-DISCORD_TOKEN = "MTMxNDUzNzE3ODY2Mjk2MTIwMg.GglFAW.eOXroSRImTovFFyfjXP_OoUwZs2oT4z0rbm9vE"
+DISCORD_TOKEN = "your-discord-bot-token"
 OWNER_ID = 654926717911302145  # Replace with your Discord user ID (integer)
 LOGS_CHANNEL_ID = 1110124527482064936  # Replace with actual Discord channel ID
 CMD_CHANNEL_ID = 1120365486299951275  # Replace with actual Discord channel ID
