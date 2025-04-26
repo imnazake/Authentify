@@ -38,9 +38,9 @@ API_KEY = "your-secure-api-key"
 
 # Discord bot setup
 DISCORD_TOKEN = "your-discord-bot-token"
-OWNER_ID = 654926717911302145  # Replace with your Discord user ID (integer)
-LOGS_CHANNEL_ID = 1110124527482064936  # Replace with actual Discord channel ID
-CMD_CHANNEL_ID = 1120365486299951275  # Replace with actual Discord channel ID
+OWNER_ID = 0  # Replace with your Discord user ID (integer)
+LOGS_CHANNEL_ID = 0  # Replace with actual Discord channel ID
+CMD_CHANNEL_ID = 0  # Replace with actual Discord channel ID
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="/", intents=intents)
