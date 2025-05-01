@@ -1,10 +1,10 @@
 # Authentify
 
-A Flask-based API integrated with a Discord bot for managing and verifying API keys with HWID (Hardware ID) binding, expiration handling, and rate-limited requests.
+A Flask-based API integrated with a Discord bot for managing and verifying license keys with HWID (Hardware ID) binding, expiration handling, and rate-limited requests.
 
 ## Features
 
-- **API Key Management**: Generate, check, and remove keys with customizable expiration times.
+- **License Key Management**: Generate, check, and remove keys with customizable expiration times.
 - **HWID Binding**: Link a unique HWID to each license key for added security.
 - **Rate Limiting**: Protects endpoints with a rate-limiting mechanism to avoid abuse.
 - **Discord Bot Integration**: Interact with a Discord bot for key management via slash commands.
@@ -19,9 +19,8 @@ A Flask-based API integrated with a Discord bot for managing and verifying API k
 
 ## Usage
 
-1. Start the Flask server to expose endpoints for key management.
-2. Run the Discord bot to allow admins to generate and manage keys via commands.
-3. Use the `/auth` endpoint to authenticate API requests from clients, verifying keys and HWIDs.
+1. Start the Flask server to expose endpoints for key management and run the discord bot automatically.
+2. Use the `/auth` endpoint to authenticate API requests from clients, verifying keys and HWIDs.
 
 ## Dependencies
 
