@@ -1,6 +1,6 @@
 # Authentify
 
-A Flask-based API integrated with a Discord bot for managing and verifying license keys with HWID (Hardware ID) binding, expiration handling, and rate-limited requests.
+A Simple Flask-based API integrated with a Discord bot for managing and verifying license keys with HWID (Hardware ID) binding, expiration handling, and rate-limited requests.
 
 ## Features
 
