@@ -16,12 +16,12 @@ namespace TestClient
 
         static async Task Main(string[] args)
         {
+            // Call your function that creates or generate a hwid from the local machine
+            generatedHwId = GetHWID();
+            
             Console.WriteLine("Enter your license key:");
             string licenseKey = Console.ReadLine();
             
-            // Call your function that creates or generate a hwid from the local machine
-            generatedHwId = GetHWID();
-
             var result = await AuthenticateKeyAsync(licenseKey, generatedHwId);
 
             Console.WriteLine("\nServer Response:");
